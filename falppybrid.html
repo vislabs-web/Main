@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Flappy Bird Enhanced</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: sans-serif;
+      transition: background 0.5s;
+    }
+
+    canvas {
+      display: block;
+      margin: auto;
+    }
+
+    #ui {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+      z-index: 2;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btn {
+      padding: 8px 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    #menu {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    #menu h1 { margin-bottom: 20px; }
+    #menu button { margin-top: 10px; }
+
+    /* Back to Home button */
+    #homeBtn {
+      position: absolute;
+      bottom: 12px;
+      left: 12px;
+      z-index: 2;
+      background: #ffffffcc;
+    }
+  </style>
+</head>
+<body>
+  <div id="ui">
+    <button class="btn" onclick="toggleDarkMode()" id="themeBtn">🌙</button>
+    <select class="btn" id="difficulty">
+      <option value="1">Easy</option>
+      <option value="1.5">Medium</option>
+      <option value="2">Hard</option>
+    </select>
+    <button class="btn" onclick="toggleMusic()" id="musicBtn">🔊</button>
+  </div>
+
+  <button id="homeBtn" class="btn" onclick="goHome()">&larr; Home</button>
+
+  <div id="menu">
+    <h1>Flappy Bird</h1>
+    <button class="btn" onclick="startGame()">Play</button>
+  </div>
+
+  <canvas id="gameCanvas" width="400" height="600"></canvas>
+
+  <!-- Background Music -->
+  <audio id="bgMusic" src="https://actions.google.com/sounds/v1/ambiences/birds_in_forest.ogg" loop></audio>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const bgMusic = document.getElementById("bgMusic");
+    const musicBtn = document.getElementById("musicBtn");
+
+    let bird, pipes, score, frame, gameOver, gameStarted = false;
+    let gravity = 0.6;
+    let difficulty = 1;
+    let musicOn = true;
+
+    function toggleDarkMode() {
+      const isDark = document.body.classList.toggle('dark');
+      document.body.style.background = isDark ? 'black' : '';
+      document.getElementById("themeBtn").textContent = isDark ? '☀️' : '🌙';
+    }
+
+    function toggleMusic() {
+      musicOn = !musicOn;
+      musicBtn.textContent = musicOn ? '🔊' : '🔇';
+      if (musicOn) {
+        bgMusic.play();
+      } else {
+        bgMusic.pause();
+      }
+    }
+
+    function startGame() {
+      document.getElementById("menu").style.display = "none";
+      difficulty = parseFloat(document.getElementById("difficulty").value);
+      resetGame();
+      gameStarted = true;
+      if (musicOn) {
+        bgMusic.volume = 0.3;
+        bgMusic.play();
+      }
+      requestAnimationFrame(gameLoop);
+    }
+
+    function resetGame() {
+      bird = { x: 80, y: 150, width: 34, height: 24, velocity: 0, jump: -10 };
+      pipes = [];
+      score = 0;
+      frame = 0;
+      gameOver = false;
+    }
+
+    function drawBackground() {
+      ctx.fillStyle = document.body.style.background === 'black' ? '#111' : '#70c5ce';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function drawBird() {
+      ctx.fillStyle = "#ffcc00";
+      ctx.fillRect(bird.x, bird.y, bird.width, bird.height);
+    }
+
+    function drawPipes() {
+      ctx.fillStyle = "#008000";
+      pipes.forEach(pipe => {
+        ctx.fillRect(pipe.x, 0, 50, pipe.top);
+        ctx.fillRect(pipe.x, pipe.top + 140, 50, canvas.height);
+      });
+    }
+
+    function updatePipes() {
+      if (frame % Math.round(100 / difficulty) === 0) {
+        let top = Math.random() * 200 + 50;
+        pipes.push({ x: canvas.width, top: top, passed: false });
+      }
+
+      pipes.forEach(pipe => pipe.x -= 2 * difficulty);
+      pipes = pipes.filter(pipe => pipe.x + 50 > 0);
+    }
+
+    function detectCollision() {
+      for (let pipe of pipes) {
+        if (
+          bird.x < pipe.x + 50 &&
+          bird.x + bird.width > pipe.x &&
+          (bird.y < pipe.top || bird.y + bird.height > pipe.top + 140)
+        ) return true;
+      }
+      return bird.y + bird.height > canvas.height || bird.y < 0;
+    }
+
+    function updateScore() {
+      pipes.forEach(pipe => {
+        if (!pipe.passed && pipe.x + 50 < bird.x) {
+          score++;
+          pipe.passed = true;
+        }
+      });
+    }
+
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBackground();
+
+      if (!gameStarted) return;
+
+      if (!gameOver) {
+        bird.velocity += gravity;
+        bird.y += bird.velocity;
+        drawBird();
+        drawPipes();
+        updatePipes();
+        updateScore();
+
+        if (detectCollision()) {
+          gameOver = true;
+          bgMusic.pause();
+          setTimeout(() => {
+            alert("Game Over! Score: " + score);
+            location.reload();
+          }, 100);
+        }
+
+        frame++;
+        requestAnimationFrame(gameLoop);
+      }
+    }
+
+    function flap() {
+      if (!gameOver && gameStarted) {
+        bird.velocity = bird.jump;
+      }
+    }
+
+    function goHome() {
+      window.open('index.html', '_blank');
+    }
+
+    canvas.addEventListener("click", flap);
+    canvas.addEventListener("touchstart", flap);
+    document.addEventListener("keydown", e => {
+      if (e.code === "Space" || e.code === "ArrowUp") flap();
+    });
+  </script>
+</body>
+</html>

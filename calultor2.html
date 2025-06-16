@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scientific Calculator</title>
+  <style>
+    :root {
+      --bg: #1e1e2f;
+      --screen-bg: #282c34;
+      --btn-bg: #3b3f52;
+      --btn-hover: #50556e;
+      --accent: #f72585;
+      --text: #f1f1f1;
+      --secondary-text: #bbbbbb;
+    }
+
+    .light-mode {
+      --bg: #f4f4f4;
+      --screen-bg: #ffffff;
+      --btn-bg: #dddddd;
+      --btn-hover: #bbbbbb;
+      --accent: #3b3f52;
+      --text: #1e1e2f;
+      --secondary-text: #333;
+    }
+
+    body {
+      background: var(--bg);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      transition: background 0.4s ease;
+    }
+
+    .calculator {
+      background: var(--screen-bg);
+      padding: 1.5rem;
+      border-radius: 16px;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.2);
+      width: 320px;
+      transition: background 0.4s ease;
+    }
+
+    .mode-toggle {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .screen {
+      background: #1a1c22;
+      padding: 1rem;
+      border-radius: 8px;
+      text-align: right;
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: var(--text);
+      box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+      transition: background 0.4s ease, color 0.4s ease;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+    }
+
+    button {
+      padding: 1rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      background: var(--btn-bg);
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.3s, transform 0.1s;
+    }
+
+    button:active {
+      transform: scale(1.1);
+    }
+
+    button:hover {
+      background: var(--btn-hover);
+    }
+
+    .operator {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    /* Back to Home button */
+    .back-home {
+      position: fixed;
+      bottom: 1rem;
+      left: 1rem;
+      background: var(--accent);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      transition: background 0.3s, transform 0.1s;
+      z-index: 1000;
+    }
+
+    .back-home:hover {
+      background: var(--btn-hover);
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <button class="mode-toggle" onclick="toggleMode()">🌗</button>
+  <div class="calculator">
+    <div class="screen" id="screen">0</div>
+    <div class="buttons">
+      <button onclick="clearScreen()">C</button>
+      <button onclick="backspace()">←</button>
+      <button onclick="append('%')">%</button>
+      <button onclick="append('**')">^</button>
+      <button class="operator" onclick="append('/')">÷</button>
+
+      <button onclick="append('7')">7</button>
+      <button onclick="append('8')">8</button>
+      <button onclick="append('9')">9</button>
+      <button onclick="append('*')">×</button>
+      <button onclick="append('Math.sqrt(')">√</button>
+
+      <button onclick="append('4')">4</button>
+      <button onclick="append('5')">5</button>
+      <button onclick="append('6')">6</button>
+      <button onclick="append('-')">−</button>
+      <button onclick="append('Math.PI')">π</button>
+
+      <button onclick="append('1')">1</button>
+      <button onclick="append('2')">2</button>
+      <button onclick="append('3')">3</button>
+      <button onclick="append('+')">+</button>
+      <button onclick="append('Math.E')">e</button>
+
+      <button onclick="append('0')">0</button>
+      <button onclick="append('.')">.</button>
+      <button onclick="append('(')">(</button>
+      <button onclick="append(')')">)</button>
+      <button class="operator" onclick="calculate()">=</button>
+    </div>
+  </div>
+
+  <!-- Back to Home button -->
+  <a href="index.html" class="back-home">🏠 Back to Home</a>
+
+  <script>
+    const screen = document.getElementById('screen');
+    const body = document.body;
+
+    function append(value) {
+      if (screen.innerText === '0') {
+        screen.innerText = value;
+      } else {
+        screen.innerText += value;
+      }
+    }
+
+    function clearScreen() {
+      screen.innerText = '0';
+    }
+
+    function backspace() {
+      screen.innerText = screen.innerText.slice(0, -1) || '0';
+    }
+
+    function calculate() {
+      try {
+        screen.innerText = eval(screen.innerText);
+      } catch {
+        screen.innerText = 'Error';
+      }
+    }
+
+    function toggleMode() {
+      body.classList.toggle('light-mode');
+    }
+  </script>
+</body>
+</html>
